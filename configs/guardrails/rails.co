@@ -1,0 +1,22 @@
+# Colang definitions for BaseInt Input Rail Guardrails
+
+define user ask sql query
+  "Show orders sorted by date"
+  "List top 5 products by price"
+  "What is total revenue by customer"
+  "Count active users"
+
+define user malicious input
+  "DROP TABLE orders; --"
+  "SELECT * FROM users WHERE 1=1"
+  "DELETE FROM customers"
+  "<script>alert('hack')</script>"
+  "orders' OR '1'='1"
+
+define flow check user input syntax
+  user malicious input
+  bot refuse malicious action
+  stop
+
+define bot refuse malicious action
+  "I cannot execute this request because it violates database security guardrails (destructive SQL, tautology, comment injection, or script patterns detected)."

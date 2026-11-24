@@ -1,0 +1,16 @@
+# NeMo Guardrails Configuration for BaseInt
+models:
+  - type: main
+    engine: openai
+    model: gpt-4o-mini
+
+rails:
+  input:
+    flows:
+      - check user input syntax
+      - block sql injection attempts
+      - block destructive commands
+      - block script injection
+  output:
+    flows:
+      - verify read-only results
