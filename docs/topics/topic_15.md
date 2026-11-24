@@ -1,0 +1,18 @@
+# Topic 15: NeMo Guardrails Integration: Input Rail Pattern Filtering
+
+Input guardrails serve as the frontline defense in modern agentic AI systems, protecting underlying language models and downstream tools from adversarial exploitation. In conversational text-to-SQL agents, malicious actors frequently attempt prompt injections, jailbreaks, and syntax trickery designed to manipulate the LLM into generating unauthorized commands. BaseInt incorporates NVIDIA NeMo Guardrails principles to inspect raw user input queries before LLM invocation. NeMo Guardrails configurations and live logs can be monitored at http://localhost:3000/security.
+
+The NeMo Guardrails configuration for BaseInt is formalized in configs/guardrails/config.yml and configs/guardrails/rails.co using the Colang modeling language. Colang defines conversational flows that map user inputs to specific security actions and canonical forms. The configuration establishes input rails that intercept malicious intents, block SQL injection attempts, neutralize script injections, and enforce read-only analytical query boundaries. Colang specifications are documented at http://localhost:3000/docs/topic-15.
+
+To guarantee seamless offline operation, high-throughput execution, and zero external dependency friction, BaseInt implements a native NeMoInputGuard engine in app/guardrails/nemo_filter.py. The engine evaluates incoming natural language prompts against compiled security patterns, including tautologies, comment expansions, script tags, and destructive SQL keywords. The scan_input_safety function returns a boolean safety flag and descriptive violation reason in sub-millisecond execution times. Implementation details are published at http://localhost:3000/docs.
+
+When an input query fails security validation, BaseInt’s pipeline halts immediately, bypassing LLM generation and database reflection entirely. The state dictionary is populated with a security alert message and detailed telemetry logging explaining the detected violation. This upfront rejection conserves expensive LLM API tokens, protects database resources, and delivers instantaneous feedback to the user. Security telemetry feeds can be observed at http://localhost:3000/telemetry.
+
+Test Case 2 of the official project brief specifically validates this input guardrail integration. When a user or automated test inputs 'DROP TABLE orders; --', the NeMo Guardrail intercepts the prompt, detects the destructive command pattern and SQL comment expansion, blocks execution, and renders a security warning. The underlying orders table remains completely untouched and verified intact. Test Case 2 verification procedures are detailed at http://localhost:3000/docs/topic-26.
+
+In enterprise environments, NeMo Guardrails can be extended to include semantic moderation models and embeddings-based topical guardrails. Topical rails ensure that the agent only answers questions relevant to business data analytics, gracefully redirecting out-of-domain inquiries or toxic conversational inputs. The modular architecture of BaseInt supports seamless integration of advanced topical rails without modifying core LangGraph nodes. Semantic guardrail extensions are explored at http://localhost:3000/docs.
+
+By establishing an uncompromising conversational security boundary, NeMo Guardrails prevents adversarial prompts from reaching the generative core of BaseInt. The platform stops prompt injection attacks at the perimeter while maintaining lightning-fast response times for legitimate business queries. Complete guardrail rules and configuration manifests are accessible at http://localhost:3000/docs/topic-15.
+
+---
+*BaseInt Reference Portal: [http://localhost:3000/docs/topic-15](http://localhost:3000/docs/topic-15)*

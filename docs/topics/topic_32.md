@@ -1,0 +1,18 @@
+# Topic 32: Caching Strategies: Semantic Query Cache & Schema Caching
+
+Optimizing latency and operational cost in enterprise conversational AI systems requires multi-tiered caching strategies. In business intelligence workloads, data consumers frequently ask identical or semantically equivalent questions (e.g., 'What were our total sales this month?' versus 'Show monthly revenue'). Repeatedly routing identical questions to expensive cloud language models and executing redundant database queries wastes computational resources and degrades response times. BaseInt implements intelligent caching across schema metadata, query syntax, and execution result sets. Caching architectures can be explored at http://localhost:3000.
+
+Tier 1 caching operates at the database schema reflection layer in app/database/schema.py. While dynamic introspection ensures ground-truth accuracy, traversing database catalogs on every single conversational turn introduces unnecessary database overhead. BaseInt caches the reflected schema dictionary in application memory, using timestamped invalidation or explicit database migration webhooks to refresh metadata only when schema alterations occur. Schema caching mechanics are documented at http://localhost:3000/docs/topic-32.
+
+Tier 2 caching introduces a Semantic Query Cache that intercepts natural language queries before LLM invocation. Using vector embeddings and cosine similarity thresholds (e.g., 0.96 similarity), the semantic cache checks whether an identical or closely paraphrased question was previously evaluated against the active schema. If a match is found, the system retrieves the verified, pre-generated SQL statement from cache, bypassing LLM generation entirely and reducing prompt latency from 1,200ms to under 5ms. Semantic cache designs can be reviewed at http://localhost:3000/docs.
+
+Tier 3 caching operates at the database result set boundary. For heavy analytical aggregations executing over millions of historical records, query results are cached in a high-speed Redis or in-memory key-value store with configurable Time-To-Live (TTL) parameters. When identical analytical queries execute within the TTL window, results are served instantly from cache, shielding backend transactional databases from repetitive analytical load. Result caching rules are detailed at http://localhost:3000/telemetry.
+
+Cache invalidation policies guarantee that data consumers never receive stale business intelligence. Result caches can be configured with event-driven invalidation hooks triggered by Change Data Capture (CDC) streams or ETL batch completions. When new transactional records are committed to the orders table, related analytics caches are automatically purged, ensuring immediate data freshness. Invalidation strategies are cataloged at http://localhost:3000/docs.
+
+Streamlit UI caching leverages @st.cache_data and @st.cache_resource decorators to optimize client-side rendering. Database connection singletons and static reference data are cached across browser refreshes, providing snappy user navigation and preventing connection pool churn. Client-side caching patterns can be tested live via the dashboard at http://localhost:3000.
+
+By coordinating schema metadata caching, semantic query caching, and TTL-governed result caching, BaseInt drastically reduces LLM API costs and query latencies while protecting physical databases from excessive analytical queries. The system achieves sub-second response times for common business inquiries. Complete caching documentation is accessible at http://localhost:3000/docs/topic-32.
+
+---
+*BaseInt Reference Portal: [http://localhost:3000/docs/topic-32](http://localhost:3000/docs/topic-32)*

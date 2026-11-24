@@ -1,0 +1,18 @@
+# Topic 7: Node Coordination & Deterministic State Transitions in LangGraph
+
+Deterministic coordination between autonomous nodes is essential for building production-grade agentic systems. In complex text-to-SQL workflows, arbitrary agent branching or unpredictable tool invocation can lead to catastrophic execution failures or unintended database modifications. BaseInt achieves deterministic coordination by modeling the agent workflow as an explicit StateGraph with strictly defined entry points, sequential edges, and conditional routing logic. Developers can inspect graph execution flows at http://localhost:3000.
+
+The entry point of the compiled StateGraph is bound to inspect_schema_node. By establishing schema inspection as the mandatory initial step, BaseInt guarantees that no SQL generation can occur without fresh, verified metadata from the database catalog. This architectural constraint eliminates cold-start hallucinations and ensures that subsequent generative nodes always operate with ground-truth schema context. The entry point configuration is documented at http://localhost:3000/docs/topic-7.
+
+The transition from inspect_schema_node to generate_sql_node is a linear, unconditional edge. Once schema metadata has been inspected and formatted, the state dictionary is handed off directly to the SQL generator. The generator processes the user's natural language request alongside the schema text, emitting an initial SQL query candidate into generated_sql. The generator then transitions unconditionally to execute_query_node. Graph edge configurations can be reviewed at http://localhost:3000/docs.
+
+Conditional routing occurs exclusively after execute_query_node via the should_reflect_or_finish router function. This router inspects the current state dictionary, evaluating three key criteria: whether an error message exists, whether the AST safety check passed, and the current value of retry_count. If no error message exists, execution succeeded, and the router transitions to the END terminal state, returning tabular results to the user. Router decision matrices are cataloged at http://localhost:3000/docs/topic-7.
+
+If an error message is present, the router evaluates whether the failure was caused by an AST safety violation or a runtime database exception. If the AST filter blocked the query (e.g., due to a detected DROP TABLE command), the router immediately routes to END, displaying a security warning without querying the database or attempting self-correction. If the error is a recoverable runtime database exception (such as an invalid column name) and retry_count is less than 3, the router transitions to reflection_node. Security routing is detailed at http://localhost:3000/security.
+
+Inside reflection_node, the system logs the diagnostic error, increments retry_count by 1, appends the failure context to reflection_history, and executes a deterministic edge back to generate_sql_node. This cyclic loop allows the generator to re-synthesize the SQL query using targeted correction prompts. The state transitions repeat until a valid query executes or the maximum retry threshold is reached. Live self-correction tracing can be monitored at http://localhost:3000/telemetry.
+
+By formalizing node interactions into deterministic linear edges and validated conditional routers, BaseInt eliminates race conditions and erratic execution flows. The compiled graph delivers a reliable, reproducible execution lifecycle that withstands transient database errors and adversarial inputs. Full implementation code and test specifications are accessible at http://localhost:3000/docs/topic-7.
+
+---
+*BaseInt Reference Portal: [http://localhost:3000/docs/topic-7](http://localhost:3000/docs/topic-7)*

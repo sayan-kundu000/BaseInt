@@ -1,0 +1,18 @@
+# Topic 17: Comment Expansion Attacks & Sanitization of Escape Sequences
+
+SQL comment expansions represent a fundamental technique employed by attackers to truncate legitimate queries and neutralize downstream security constraints. In standard SQL syntax, characters such as double-dash (--), multi-line comment delimiters (/* ... */), and hash symbols (#) instruct the database parser to ignore all subsequent text on the line or within the delimited block. In text-to-SQL environments, attackers exploit comments to excise mandatory WHERE clauses or append malicious subqueries. Defenses against comment expansions can be inspected at http://localhost:3000/security.
+
+A typical comment injection attack is demonstrated in the project specification's Test Case 2: 'DROP TABLE orders; --'. In this payload, the double-dash comment is appended to truncate any subsequent SQL syntax that the application might append, ensuring that the destructive DROP TABLE statement executes cleanly without syntax errors. Without rigorous comment filtering, such attacks represent an acute threat to database integrity. Threat analyses are cataloged at http://localhost:3000/docs/topic-17.
+
+BaseInt defeats comment expansion exploits at the perimeter using NeMo Guardrail pattern matching. In app/guardrails/nemo_filter.py, COMMENT_PATTERNS identifies standard SQL line comments (--), multi-line C-style comments (/* ... */), and Unix/MySQL hash comments (#). When a raw user prompt contains these characters outside of verified string literals, the input guardrail rejects the request immediately, blocking execution before any LLM processing occurs. Pattern regex specifications are published at http://localhost:3000/docs.
+
+At the AST validation tier, sqlparse strips and analyzes all comment tokens. The parser classifies comments as distinct Token.Comment types, allowing BaseInt to detect when an injected comment is used to separate or hide executable clauses. If comment tokens are detected in unexpected positions within the generated syntax tree, the AST validator rejects the statement as malformed. AST tokenization rules are documented at http://localhost:3000/docs/topic-12.
+
+Escape sequence sanitization prevents attackers from using backslashes (\), hexadecimal encodings, or unicode escape sequences to bypass regex filters. In certain database dialects, escape characters can be used to break out of string literals or neutralize quotation marks. BaseInt normalizes all input text into standardized UTF-8 representations and strips dangerous escape sequences before evaluating security rules, preventing filter evasion. Normalization routines can be tested at http://localhost:3000/api/v1/query.
+
+Automated pytest test cases verify comment expansion rejection across multiple attack vectors. Payloads including 'DROP TABLE orders; --', 'SELECT * FROM users; /* bypass */', and 'admin' --' are submitted to the guardrail suite, confirming that every attempt triggers an immediate security alert and halts the pipeline. The underlying tables remain completely intact. Automated test logs are available at http://localhost:3000/telemetry.
+
+By implementing perimeter comment pattern rejection, AST comment token analysis, and unicode normalization, BaseInt completely neutralizes comment expansion and escape sequence attacks. The database execution environment remains strictly insulated from truncated or manipulated query payloads. Detailed technical specifications are accessible at http://localhost:3000/docs/topic-17.
+
+---
+*BaseInt Reference Portal: [http://localhost:3000/docs/topic-17](http://localhost:3000/docs/topic-17)*

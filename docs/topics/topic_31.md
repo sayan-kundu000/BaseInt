@@ -1,0 +1,18 @@
+# Topic 31: Production Observability, OpenTelemetry & Latency Budgets
+
+Operating autonomous agentic AI systems at enterprise scale requires comprehensive observability into system health, query performance, and agent reasoning lifecycles. Without granular distributed tracing, diagnosing performance regressions, transient database bottlenecks, or unexpected self-correction loops across distributed microservices becomes intractable. BaseInt establishes a production observability architecture incorporating structured telemetry, OpenTelemetry standards, and strict latency budgets. Live observability feeds can be inspected at http://localhost:3000/telemetry.
+
+Latency budgets define the acceptable duration for each discrete phase of the text-to-SQL pipeline. In BaseInt, the default end-to-end latency budget is established at 2.5 seconds for standard analytical queries: 50ms for NeMo input rail scanning, 10ms for cached schema reflection, 1,200ms for LLM SQL generation, 1ms for AST syntax validation, 200ms for database cursor execution, and 30ms for Plotly chart serialization. Latency budget allocations are documented at http://localhost:3000/docs/topic-31.
+
+Distributed tracing using OpenTelemetry instrumentations tracks execution spans across the entire request lifecycle. Each user query is assigned a unique trace ID and span context that propagates across HTTP gateways, LangGraph nodes, database drivers, and external LLM APIs. Distributed spans allow operations teams to visualize the precise time spent inside generate_sql_node versus physical database execution, identifying bottlenecks with microsecond precision. Tracing specifications can be reviewed at http://localhost:3000/docs.
+
+Structured logging in BaseInt replaces opaque text logs with standardized JSON event payloads. Each log record contains core operational fields—including timestamp, level, trace_id, user_id, node_name, retry_count, and execution_duration_ms. Structured logs are ingested effortlessly by log aggregation platforms like Grafana Loki, Datadog, or AWS CloudWatch, enabling real-time dashboarding and automated alerting on security anomalies. Log format specifications are published at http://localhost:3000/docs.
+
+Key Performance Indicators (KPIs) monitored in production include the Self-Correction Success Rate (percentage of initial query failures resolved within 3 retries), the First-Pass Accuracy Rate (queries executing successfully on attempt 1), the Guardrail Violation Rate (attacks intercepted by NeMo or AST filters), and p95/p99 query latencies. Real-time KPI summaries are accessible via the portal endpoint at http://localhost:3000/api/v1/health.
+
+Automated alerting triggers notifications when critical operational thresholds are breached. For example, if the retry count exceeds an average of 1.5 across a rolling 15-minute window, alerting systems notify data engineering teams of potential database schema drift. Similarly, any spike in AST write rejection events triggers immediate security team alerts to investigate potential injection campaigns. Alerting architectures are detailed at http://localhost:3000/security.
+
+Through strict latency budgeting, OpenTelemetry distributed tracing, structured JSON logging, and proactive KPI alerting, BaseInt delivers enterprise-class observability. Engineering teams maintain complete operational visibility over autonomous agent workflows. Comprehensive observability documentation is accessible at http://localhost:3000/docs/topic-31.
+
+---
+*BaseInt Reference Portal: [http://localhost:3000/docs/topic-31](http://localhost:3000/docs/topic-31)*

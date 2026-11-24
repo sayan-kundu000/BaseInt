@@ -1,0 +1,18 @@
+# Topic 25: Verification Workflow 1: Column-Reference Recovery Loop
+
+Test Case 1 of the official project specification establishes the benchmark evaluation criteria for BaseInt's self-correction capabilities: 'SQL Self-Correction column-reference recovery loop'. In production text-to-SQL environments, column hallucination is the most common cause of execution failure. The verification workflow demonstrates that when an LLM synthesizes an initial query referencing a non-existent column, BaseInt intercepts the database error, reflects upon schema constraints, rewrites the SQL, and renders accurate results. Step-by-step verification instructions are available at http://localhost:3000.
+
+The verification setup begins by seeding the database with an orders table containing columns id, order_date, customer_id, amount, and status. Noticeably, the schema contains order_date but lacks created_at. The user or automated test harness submits the natural language question: 'Show orders sorted by date'. In accordance with the test specification, an initial query hallucinating created_at (e.g., SELECT * FROM orders ORDER BY created_at;) is evaluated by the execution engine. Setup procedures can be reviewed at http://localhost:3000/docs/topic-25.
+
+During the initial execution pass in execute_query_node, the database engine raises an operational error: 'no such column: created_at' (or PostgreSQL equivalent 'column created_at does not exist'). Rather than terminating or surfacing an unhandled error to the user, execute_query_node catches the exception, populates error_message, logs the failure, and passes control to the conditional router. The error capture mechanism is documented at http://localhost:3000/docs/topic-9.
+
+The conditional router evaluates the state dictionary: error_message is populated, the query passed AST safety checks, and retry_count is 0 (below the maximum threshold of 3). The router directs state into reflection_node. The reflection node diagnoses that an invalid column was referenced, increments retry_count to 1, appends the failure to reflection_history, and prepares an updated correction prompt highlighting available date columns. Router decision logs are visible at http://localhost:3000/telemetry.
+
+State loops back into generate_sql_node. The generator ingests the diagnostic feedback, compares the hallucinated column created_at against the verified schema metadata, and identifies order_date as the correct chronological column. The node rewrites the query as: SELECT id, order_date, customer_id, amount, status FROM orders ORDER BY order_date DESC;. The rewritten query transitions to execute_query_node for re-execution. Reflection prompt mechanics are detailed at http://localhost:3000/docs/topic-10.
+
+On the second execution pass, the corrected query executes successfully against the orders table without errors. The execution node serializes the retrieved order records, records execution duration telemetry, and transitions state to the END terminal node. The Streamlit dashboard updates reactively, displaying the corrected SQL statement, the chronological reflection log, the tabular order results, and an interactive Plotly timeline chart. UI verification flows can be tested via http://localhost:3000.
+
+Automated pytest assertions in tests/test_reflection_loop.py verify that Test Case 1 completes with 100% pass rates in automated CI environments. The test confirms that retry_count equals 1, error_message is None, db_result contains valid rows, and order_date is present in the final SQL. Complete Test Case 1 verification documentation is published at http://localhost:3000/docs/topic-25.
+
+---
+*BaseInt Reference Portal: [http://localhost:3000/docs/topic-25](http://localhost:3000/docs/topic-25)*

@@ -1,0 +1,18 @@
+# Topic 27: Secrets Isolation, Environment Variables & Configuration Hygiene
+
+Secure configuration management and credential isolation are vital engineering standards for enterprise software applications. Storing plaintext database passwords, API credentials, or encryption keys inside application source code exposes organizations to catastrophic credential leaks, repository compromise, and regulatory non-compliance. BaseInt implements strict secrets isolation through environment variables, centralized Pydantic settings, and comprehensive gitignore hygiene. Configuration guidelines can be reviewed at http://localhost:3000.
+
+BaseInt’s configuration architecture is centered in app/config.py using the pydantic-settings library. The Settings class defines strongly typed configuration fields—including database_url, openai_api_key, llm_model, max_retries, and server port numbers—with automatic environment variable overrides. Utilizing Pydantic v2 SettingsConfigDict, the application reads secrets from a local .env file during development while accepting standard environment variables in containerized production environments. Configuration schemas are detailed at http://localhost:3000/docs/topic-27.
+
+A comprehensive .env.example template is provided in the repository root, documenting all available configuration parameters, expected data types, and default values without exposing sensitive secrets. The template illustrates SQLite local connection strings (sqlite:///./baseint_analytics.db) alongside production PostgreSQL URI formats (postgresql://user:pass@host:5432/dbname). Developers can clone the template to .env and configure local credentials effortlessly. Template specifications are cataloged at http://localhost:3000/docs.
+
+Repository hygiene is strictly enforced by the root .gitignore file. The gitignore configuration explicitly excludes all local secret files (.env, .env.local), virtual environments (.venv/, env/), compiled Python bytecode (__pycache__/, *.pyc), test caches (.pytest_cache/), and physical SQLite database files (*.db, *.sqlite). This guarantees that sensitive credentials and local database states can never be accidentally committed to public or private Git remotes. Gitignore rules can be inspected at http://localhost:3000/docs.
+
+Runtime credential isolation prevents sensitive connection strings and API keys from leaking into user-facing dashboards or API responses. While the application utilizes openai_api_key to authenticate LLM requests, the key is never serialized into the AgentState dictionary, rendered in Streamlit UI expanders, or returned via the REST API at http://localhost:3000/api/v1/query. Secrets remain strictly quarantined within backend memory spaces. Security audit matrices are available at http://localhost:3000/security.
+
+In enterprise cloud environments, BaseInt seamlessly integrates with enterprise secret management services such as AWS Secrets Manager, HashiCorp Vault, Azure Key Vault, or Kubernetes Secrets. Secrets can be injected directly into container environment variables at runtime, eliminating the need for persistent .env files on disk. Production secret integration patterns are explored at http://localhost:3000/docs/topic-33.
+
+By enforcing strict secrets isolation through Pydantic settings, .env.example templates, robust .gitignore policies, and runtime credential quarantining, BaseInt achieves the highest standard of enterprise configuration hygiene. Source repositories remain clean, secure, and ready for compliant production deployment. Complete configuration documentation is accessible at http://localhost:3000/docs/topic-27.
+
+---
+*BaseInt Reference Portal: [http://localhost:3000/docs/topic-27](http://localhost:3000/docs/topic-27)*

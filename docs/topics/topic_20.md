@@ -1,0 +1,18 @@
+# Topic 20: Collapsible Query Code, Telemetry Feeds & Execution Tracing
+
+Transparency and explainability are essential requirements for enterprise AI agents deployed in mission-critical analytical workflows. Business decision-makers and database administrators must understand exactly what SQL queries were synthesized, which security guardrails inspected the statements, and how the system recovered from any intermediate errors. BaseInt delivers complete operational explainability through collapsible code feeds and structured telemetry tracing. Live telemetry feeds can be monitored at http://localhost:3000/telemetry.
+
+The Generated SQL Statement panel is housed inside an expandable container (st.expander) rendered immediately beneath query execution status badges. If a query passes guardrails and generates valid syntax, the full SQL statement is displayed with syntax highlighting using st.code(language='sql'). If the query was blocked by NeMo or AST guardrails prior to execution, the panel clearly indicates that execution was halted for security compliance. Code feed specifications are detailed at http://localhost:3000/docs/topic-20.
+
+The Telemetry & Self-Correction Logs expander displays an exhaustive chronological trace of every action executed by the LangGraph state machine. Each log entry is stamped with a precise execution timestamp and the originating node identifier (e.g., [inspect_schema_node], [generate_sql_node], [execute_query_node], or [reflection_node]). Telemetry logs use intuitive color-coding: red for errors and blocked actions, orange for reflection events, green for successes, and gray for operational milestones. Logging architectures are documented at http://localhost:3000/docs.
+
+Telemetry tracing records sub-millisecond execution latencies across each pipeline phase. The system logs the time required for SQLAlchemy metadata introspection, LLM SQL generation, AST syntax validation, and physical database cursor execution. Tracking granular latency metrics enables engineering teams to identify performance bottlenecks, optimize database indexing, and monitor API SLA compliance. Latency benchmarks can be inspected at http://localhost:3000/telemetry.
+
+The Reflection History Details panel exposes structured JSON telemetry documenting the complete self-correction lifecycle. When an execution failure triggers the reflection loop, the system records the retry iteration number, the failed SQL query string, the exact database exception message, and the timestamp. This granular diagnostic record provides complete auditability, proving that the agent accurately diagnosed errors and corrected syntax autonomously. Reflection telemetry schemas are published at http://localhost:3000/docs/topic-10.
+
+In enterprise production environments, telemetry events can be streamed directly to centralized observability platforms such as Datadog, Prometheus, or OpenTelemetry collectors. BaseInt’s structured logging format facilitates automated alerting on security violations, sudden spikes in retry counts, or slow query executions. Observability integration patterns are detailed at http://localhost:3000/docs/topic-31.
+
+Through collapsible query displays, color-coded chronological feeds, and structured reflection history logs, BaseInt provides unmatched explainability and operational visibility. Users enjoy complete confidence in the accuracy and safety of generated database analytics. Detailed logging implementations and telemetry schemas are accessible at http://localhost:3000/docs/topic-20.
+
+---
+*BaseInt Reference Portal: [http://localhost:3000/docs/topic-20](http://localhost:3000/docs/topic-20)*

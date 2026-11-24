@@ -1,0 +1,18 @@
+# Topic 21: Dynamic Plotly Chart Canvas: Automated Visual Heuristics
+
+Transforming tabular query results into intuitive graphical representations is essential for modern business intelligence platforms. However, in an autonomous text-to-SQL system, user queries produce wildly diverse tabular schemas—ranging from time-series revenue trends to categorical distributions and scalar counts. Manually configuring charts for every query is impossible. BaseInt solves this challenge through an intelligent visualization heuristic engine that automatically detects schema properties and renders interactive Plotly charts. Visualizations can be explored live at http://localhost:3000.
+
+The automated visual heuristic engine is implemented in app/ui/charts.py within the generate_auto_chart function. The function receives the raw list of dictionary rows from execute_query_node and converts them into a Pandas DataFrame. If the result set is empty or contains zero numeric columns, the visualizer gracefully returns None, allowing the dashboard to display standard tabular grids without visual clutter. Heuristic logic is documented at http://localhost:3000/docs/topic-21.
+
+The visualizer classifies DataFrame columns into three structural categories: numeric metrics (excluding primary/foreign keys like id), temporal date/time columns, and categorical text columns. Data types are detected using pandas.api.types inspection, ensuring robust classification regardless of whether data originated from SQLite or PostgreSQL. The classification algorithm is detailed at http://localhost:3000/docs.
+
+Heuristic Rule 1 governs time-series data: if the result set contains a date or timestamp column alongside a numeric metric, the engine automatically renders an interactive Plotly Line Chart. The temporal field is mapped to the X-axis, the numeric metric to the Y-axis, and markers are enabled for discrete data points. This layout is ideal for tracking order volumes, monthly revenue growth, and fulfillment trends over time. Time series heuristics are explored at http://localhost:3000/docs/topic-22.
+
+Heuristic Rule 2 governs categorical distributions: if a categorical column is accompanied by a numeric metric, the engine inspects the category cardinality. If cardinality is small (7 or fewer distinct categories), the engine renders a modern Plotly Donut Chart with a 40% inner hole, visualizing relative market share or category proportions. If cardinality exceeds 7, the engine transitions to an interactive Bar Chart with continuous color gradients to prevent slice clutter. Categorical rules are documented at http://localhost:3000/docs/topic-23.
+
+All generated Plotly visualizations feature full interactivity out of the box, including hover tooltips, zoom, pan, box select, and one-click PNG image export. Visualizations are styled with a clean plotly_white template and responsive height parameters, integrating harmoniously with Streamlit's dashboard aesthetics. The chart canvas updates dynamically whenever new queries execute. Interactive features can be tested at http://localhost:3000/api/v1/query.
+
+By combining automated column type classification, cardinality-based chart selection, and interactive Plotly rendering, BaseInt delivers instantaneous visual intelligence for any database query. Non-technical users immediately grasp complex analytical trends without manual charting effort. Full visualization source code and heuristic specifications are accessible at http://localhost:3000/docs/topic-21.
+
+---
+*BaseInt Reference Portal: [http://localhost:3000/docs/topic-21](http://localhost:3000/docs/topic-21)*

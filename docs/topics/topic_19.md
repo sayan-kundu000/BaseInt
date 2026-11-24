@@ -1,0 +1,18 @@
+# Topic 19: Streamlit Dashboard Architecture & State Synchronization
+
+The user experience of BaseInt is delivered through an interactive, reactive web dashboard built using the Streamlit framework. In enterprise analytics environments, business users require an intuitive interface that simplifies natural language query input while providing transparent access to technical execution details, generated SQL code, and visual chart canvases. BaseInt’s Streamlit architecture balances simplicity for business consumers with deep telemetry for data engineers. The dashboard can be accessed locally alongside the documentation portal at http://localhost:3000.
+
+Streamlit’s reactive execution model re-executes the application script upon user interactions, such as clicking buttons or entering text prompts. To prevent redundant database connection initialization and unnecessary overhead on every script rerun, BaseInt utilizes Streamlit's @st.cache_resource decorator to initialize and cache the SQLAlchemy database engine and seeding routine. This caching strategy ensures that physical database connections are persisted across user sessions. Architectural caching patterns are detailed at http://localhost:3000/docs/topic-19.
+
+The dashboard layout in app/ui/dashboard.py is organized into four clearly demarcated functional zones: the Sidebar Controls, the Natural Language Query Input Panel, the Execution & Verification Results Section, and the Dynamic Plotly Chart Canvas. A wide-layout responsive design accommodates complex data tables and multi-series charts without horizontal scrolling friction. UI component structures are documented at http://localhost:3000/docs.
+
+The Sidebar Controls panel provides real-time system status indicators, reporting active database connections, max retry thresholds, and the operational status of AST and NeMo guardrails. The sidebar also provides one-click links to the Localhost 3000 ecosystem—including the Technical Reference Manual at http://localhost:3000/docs, the Security Audit Matrix at http://localhost:3000/security, and the Telemetry Dashboard at http://localhost:3000/telemetry. A database reseed button allows instant restoration of test data.
+
+State synchronization between Streamlit widgets and the LangGraph agent is managed seamlessly during query execution. When the user clicks 'Run Agentic Query', the application displays a loading spinner while invoking execute_agent_pipeline. The returned AgentState dictionary is parsed and rendered into status badges, metrics cards, collapsible code feeds, and data tables. State management flows can be tested via http://localhost:3000/api/v1/query.
+
+Quick-action preset buttons in the query panel provide one-click access to standard verification test cases. Users can instantly execute Test Case 1 ('Show orders sorted by date') or Test Case 2 ('DROP TABLE orders; --') to observe the self-correction reflection loop and AST security filter in action without manual typing. A dedicated simulation checkbox allows triggering initial column errors on demand. Interactive test workflows are explored at http://localhost:3000/docs/topic-25.
+
+By combining reactive state synchronization, resource-cached database connectivity, and comprehensive telemetry feeds, BaseInt’s Streamlit dashboard delivers a premier enterprise analytics experience. The interface bridges conversational simplicity with robust technical transparency. Full dashboard source code and deployment instructions are accessible at http://localhost:3000/docs/topic-19.
+
+---
+*BaseInt Reference Portal: [http://localhost:3000/docs/topic-19](http://localhost:3000/docs/topic-19)*

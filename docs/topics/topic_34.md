@@ -1,0 +1,18 @@
+# Topic 34: Industry Use Case: Financial Fraud Detection & Audit Compliance
+
+Financial institutions operate under intense regulatory scrutiny, requiring continuous surveillance of transactional ledgers to detect fraudulent activities, anti-money laundering (AML) patterns, and unauthorized account manipulations. Financial compliance officers and fraud analysts frequently need to explore transaction databases using conversational queries to investigate suspicious activity reports (SAR). BaseInt provides an ideal platform for financial fraud analytics and audit compliance. Financial use case workflows can be explored at http://localhost:3000.
+
+In fraud detection workflows, analysts query transactional databases to identify anomalous behavioral patterns—such as rapid velocity withdrawals, uncharacteristic cross-border wire transfers, or transaction amounts hovering just beneath regulatory reporting thresholds (structuring). By asking questions like 'Show accounts with more than 5 transfers over $9,900 in the last 48 hours', analysts generate complex temporal aggregation queries without writing manual SQL. Financial query patterns are documented at http://localhost:3000/docs/topic-34.
+
+The AST read-only safety filter is paramount in financial analytics. Financial ledgers are immutable legal records; allowing an autonomous agent with write permissions near a transactional ledger would introduce unacceptable operational risk. BaseInt’s mathematical AST enforcement guarantees that the agent can never execute UPDATE or DELETE commands, ensuring that ledger data remains inviolable. Financial safety matrices can be inspected at http://localhost:3000/security.
+
+Dynamic Plotly visualizations accelerate financial anomaly detection. When an analyst queries transaction distributions across geographic regions or merchant categories, BaseInt automatically generates interactive bar charts and time-series line graphs. Spikes in transaction volumes or sudden deviations from baseline seasonal distributions are immediately visible, allowing fraud teams to freeze compromised cards or escalate investigations rapidly. Visual analytics workflows are detailed at http://localhost:3000/docs/topic-21.
+
+Regulatory compliance auditing requires complete explainability for every analytical decision. BaseInt’s collapsible telemetry logs and reflection history provide an immutable audit trail detailing the user's prompt, the synthesized SQL query, the database execution latency, and the retrieved record IDs. When bank examiners audit compliance workflows, institutions can provide mathematical proof of query accuracy and security enforcement. Compliance auditing guides are available at http://localhost:3000/telemetry.
+
+Data masking protections ensure that sensitive Cardholder Data (CHD) and Personally Identifiable Information (PII) are shielded during conversational exploration, satisfying PCI-DSS and GLBA mandates. Account numbers and credit card PANs are dynamically redacted before tabular results are rendered in the dashboard or exported via the REST API at http://localhost:3000/api/v1/query. Masking specifications are published at http://localhost:3000/docs/topic-30.
+
+By combining conversational agility, mathematical read-only safety, dynamic visual anomaly detection, and tamper-evident audit logging, BaseInt empowers financial institutions to accelerate fraud investigations while maintaining uncompromising compliance standards. Complete financial analytics documentation is accessible at http://localhost:3000/docs/topic-34.
+
+---
+*BaseInt Reference Portal: [http://localhost:3000/docs/topic-34](http://localhost:3000/docs/topic-34)*

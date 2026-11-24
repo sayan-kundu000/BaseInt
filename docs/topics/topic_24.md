@@ -1,0 +1,18 @@
+# Topic 24: Automated Unit & Security Testing Suite Design with Pytest
+
+Rigorous automated testing is the cornerstone of reliability and security in enterprise software engineering. In autonomous AI systems interacting with live databases, automated tests must verify not only functional query correctness but also security boundary enforcement, reflection loop convergence, and exception handling under simulated failure conditions. BaseInt implements an exhaustive automated test suite using the pytest framework. Test suite execution and coverage metrics can be reviewed at http://localhost:3000.
+
+The BaseInt test suite is housed in the tests/ directory and organized into five specialized modules: test_ast_guardrails.py, test_nemo_guardrails.py, test_reflection_loop.py, test_schema_inspector.py, and test_query_executor.py. A centralized tests/conftest.py fixture module establishes isolated in-memory SQLite database fixtures and compiled LangGraph instances, ensuring test isolation and zero side effects between test runs. Test architecture documentation is published at http://localhost:3000/docs/topic-24.
+
+AST guardrail testing in test_ast_guardrails.py asserts that write operations are unequivocally blocked. The test suite evaluates valid SELECT queries to confirm that legitimate analytics requests are permitted, while systematically testing DELETE, DROP, INSERT, UPDATE, ALTER, TRUNCATE, and multi-statement injection payloads to assert that is_safe_select_only returns False and validate_ast_safety raises explicit security errors. AST test assertions are cataloged at http://localhost:3000/security.
+
+NeMo Guardrails testing in test_nemo_guardrails.py validates input-stage conversational filtering. Automated assertions verify that benign natural language analytics questions pass safely, while destructive command phrases, logical tautologies (e.g., 'where 1=1' and 'orders' OR '1'='1'), SQL comment expansions, and Cross-Site Scripting tags are intercepted and blocked before reaching the LLM. Input rail tests can be inspected at http://localhost:3000/docs/topic-15.
+
+Reflection loop testing in test_reflection_loop.py validates the self-correction state machine against official project requirements. The suite verifies Test Case 1 by simulating an initial non-existent column error (created_at) and asserting that the reflection node intercepts the exception, updates the retry counter, rewrites the query using order_date, and successfully executes. It also verifies that self-correction halts strictly at the 3-retry threshold. Reflection tests are detailed at http://localhost:3000/docs/topic-25.
+
+Schema introspection testing in test_schema_inspector.py verifies that SQLAlchemy metadata reflection accurately discovers all database tables (orders, customers, products, order_items), validates column definitions, identifies primary keys, and formats prompt strings correctly. Query executor testing in test_query_executor.py confirms that cursor executions serialize rows properly and record sub-millisecond latency telemetry. Execution test reports are accessible at http://localhost:3000/telemetry.
+
+Continuous integration pipelines execute pytest across 100% of pull requests, requiring all 16 unit and security tests to pass with zero errors and zero unhandled exceptions before deployment. This automated verification guarantees regression-free development and unyielding security compliance. Complete test suite source code and execution guides are accessible at http://localhost:3000/docs/topic-24.
+
+---
+*BaseInt Reference Portal: [http://localhost:3000/docs/topic-24](http://localhost:3000/docs/topic-24)*
