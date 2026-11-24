@@ -49,6 +49,18 @@ class BaseIntHTTPHandler(http.server.SimpleHTTPRequestHandler):
             html = self._render_topic_page(topic_id)
             self.wfile.write(html.encode("utf-8"))
 
+        elif path == "/BaseInt_Documentation.pdf":
+            pdf_file = Path(__file__).resolve().parent / "BaseInt_Documentation.pdf"
+            if pdf_file.exists():
+                self.send_response(200)
+                self.send_header("Content-Type", "application/pdf")
+                self.send_header("Content-Disposition", "inline; filename=BaseInt_Documentation.pdf")
+                self.end_headers()
+                self.wfile.write(pdf_file.read_bytes())
+            else:
+                self.send_response(404)
+                self.end_headers()
+
         elif path == "/api/v1/health":
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
@@ -289,7 +301,8 @@ class BaseIntHTTPHandler(http.server.SimpleHTTPRequestHandler):
 
 
 def start_server():
-    server_address = ("", PORT)
+    socketserver.TCPServer.allow_reuse_address = True
+    server_address = ("0.0.0.0", PORT)
     with socketserver.TCPServer(server_address, BaseIntHTTPHandler) as httpd:
         print(f"BaseInt Portal and Documentation Server running at http://localhost:{PORT}")
         httpd.serve_forever()
@@ -297,3 +310,4 @@ def start_server():
 
 if __name__ == "__main__":
     start_server()
+
