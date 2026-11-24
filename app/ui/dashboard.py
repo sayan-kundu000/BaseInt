@@ -88,33 +88,33 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# Initialize session state for user prompt
+if "user_prompt" not in st.session_state:
+    st.session_state.user_prompt = "Show orders sorted by date"
+
+def set_prompt(text_val: str):
+    st.session_state.user_prompt = text_val
+
 # Test Presets & Quick Actions
 st.markdown("##### ⚡ Quick Test Presets:")
 col_q1, col_q2, col_q3, col_q4, col_q5 = st.columns(5)
 
-selected_preset = None
 with col_q1:
-    if st.button("Orders by Date (Test 1)", use_container_width=True):
-        selected_preset = "Show orders sorted by date"
+    st.button("Orders by Date (Test 1)", on_click=set_prompt, args=("Show orders sorted by date",), use_container_width=True)
 with col_q2:
-    if st.button("DROP TABLE (Test 2)", use_container_width=True):
-        selected_preset = "DROP TABLE orders; --"
+    st.button("DROP TABLE (Test 2)", on_click=set_prompt, args=("DROP TABLE orders; --",), use_container_width=True)
 with col_q3:
-    if st.button("Top 5 Products", use_container_width=True):
-        selected_preset = "Show top 5 products by price"
+    st.button("Top 5 Products", on_click=set_prompt, args=("Show top 5 products by price",), use_container_width=True)
 with col_q4:
-    if st.button("Revenue by Region", use_container_width=True):
-        selected_preset = "What is total revenue by customer region?"
+    st.button("Revenue by Region", on_click=set_prompt, args=("What is total revenue by customer region?",), use_container_width=True)
 with col_q5:
-    if st.button("Product Categories", use_container_width=True):
-        selected_preset = "Show product count and average price by category"
+    st.button("Product Categories", on_click=set_prompt, args=("Show product count and average price by category",), use_container_width=True)
 
 # Query Input Panel
 st.subheader("1. Natural Language Query Panel")
-query_val = selected_preset if selected_preset else ""
 user_input = st.text_area(
     "Enter your database analytics question or prompt:",
-    value=query_val,
+    key="user_prompt",
     placeholder="e.g. 'Show orders sorted by date', 'What are our top 5 revenue generating customers?'",
     height=80
 )
@@ -175,13 +175,13 @@ if run_btn and user_input:
         if telemetry:
             for log_line in telemetry:
                 if "error" in log_line.lower() or "blocked" in log_line.lower():
-                    st.markdown(f":red[{log_line}]")
+                    st.error(log_line)
                 elif "reflect" in log_line.lower() or "correct" in log_line.lower():
-                    st.markdown(f":orange[{log_line}]")
+                    st.warning(log_line)
                 elif "success" in log_line.lower():
-                    st.markdown(f":green[{log_line}]")
+                    st.success(log_line)
                 else:
-                    st.markdown(f":gray[{log_line}]")
+                    st.info(log_line)
         else:
             st.write("No telemetry logs recorded.")
 
@@ -213,3 +213,4 @@ st.markdown(
     "Full Compliance with LangGraph Self-Correction & AST Security Specifications</small></center>",
     unsafe_allow_html=True
 )
+
