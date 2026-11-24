@@ -23,13 +23,30 @@ DOCS_DIR = Path(__file__).resolve().parent / "docs" / "topics"
 class BaseIntHTTPHandler(http.server.SimpleHTTPRequestHandler):
     """Custom HTTP handler serving the BaseInt Localhost 3000 ecosystem."""
 
+    def _send_cors_headers(self):
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self._send_cors_headers()
+        self.end_headers()
+
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
 
+        if path == "/favicon.ico":
+            self.send_response(204)
+            self._send_cors_headers()
+            self.end_headers()
+            return
+
         if path in ("/", "/index.html"):
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
+            self._send_cors_headers()
             self.end_headers()
             html = self._render_portal_home()
             self.wfile.write(html.encode("utf-8"))
@@ -37,6 +54,7 @@ class BaseIntHTTPHandler(http.server.SimpleHTTPRequestHandler):
         elif path in ("/dashboard", "/dashboard/"):
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
+            self._send_cors_headers()
             self.end_headers()
             html = self._render_dashboard_page()
             self.wfile.write(html.encode("utf-8"))
@@ -44,6 +62,7 @@ class BaseIntHTTPHandler(http.server.SimpleHTTPRequestHandler):
         elif path == "/docs" or path == "/docs/":
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
+            self._send_cors_headers()
             self.end_headers()
             html = self._render_docs_index()
             self.wfile.write(html.encode("utf-8"))
@@ -52,6 +71,7 @@ class BaseIntHTTPHandler(http.server.SimpleHTTPRequestHandler):
             topic_id = path.replace("/docs/topic-", "").replace(".html", "").strip("/")
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
+            self._send_cors_headers()
             self.end_headers()
             html = self._render_topic_page(topic_id)
             self.wfile.write(html.encode("utf-8"))
@@ -62,6 +82,7 @@ class BaseIntHTTPHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-Type", "application/pdf")
                 self.send_header("Content-Disposition", "inline; filename=BaseInt_Documentation.pdf")
+                self._send_cors_headers()
                 self.end_headers()
                 self.wfile.write(pdf_file.read_bytes())
             else:
@@ -71,6 +92,7 @@ class BaseIntHTTPHandler(http.server.SimpleHTTPRequestHandler):
         elif path == "/api/v1/health":
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
+            self._send_cors_headers()
             self.end_headers()
             resp = {
                 "system": "BaseInt Analytics Agent",
@@ -85,6 +107,7 @@ class BaseIntHTTPHandler(http.server.SimpleHTTPRequestHandler):
         elif path == "/security":
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
+            self._send_cors_headers()
             self.end_headers()
             html = self._render_security_page()
             self.wfile.write(html.encode("utf-8"))
@@ -92,6 +115,7 @@ class BaseIntHTTPHandler(http.server.SimpleHTTPRequestHandler):
         elif path == "/telemetry":
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
+            self._send_cors_headers()
             self.end_headers()
             eng = get_engine()
             schema = inspect_database_schema(eng)
@@ -102,6 +126,7 @@ class BaseIntHTTPHandler(http.server.SimpleHTTPRequestHandler):
                 "security_engine": "sqlparse AST + NeMo Rails",
                 "links": {
                     "docs": f"http://localhost:{PORT}/docs",
+                    "dashboard": f"http://localhost:{PORT}/dashboard",
                     "health": f"http://localhost:{PORT}/api/v1/health",
                     "streamlit": f"http://localhost:{settings.streamlit_server_port}"
                 }
@@ -123,6 +148,7 @@ class BaseIntHTTPHandler(http.server.SimpleHTTPRequestHandler):
                 state = execute_agent_pipeline(query, simulate_initial_error=sim)
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
+                self._send_cors_headers()
                 self.end_headers()
                 resp = {
                     "user_query": state.get("user_query"),
@@ -138,6 +164,7 @@ class BaseIntHTTPHandler(http.server.SimpleHTTPRequestHandler):
             except Exception as e:
                 self.send_response(400)
                 self.send_header("Content-Type", "application/json")
+                self._send_cors_headers()
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode("utf-8"))
         else:
@@ -631,9 +658,10 @@ class BaseIntHTTPHandler(http.server.SimpleHTTPRequestHandler):
 
 
 def start_server():
-    socketserver.TCPServer.allow_reuse_address = True
+    socketserver.ThreadingTCPServer.allow_reuse_address = True
+    socketserver.ThreadingTCPServer.daemon_threads = True
     server_address = ("0.0.0.0", PORT)
-    with socketserver.TCPServer(server_address, BaseIntHTTPHandler) as httpd:
+    with socketserver.ThreadingTCPServer(server_address, BaseIntHTTPHandler) as httpd:
         print(f"BaseInt Portal and Documentation Server running at http://localhost:{PORT}")
         httpd.serve_forever()
 
